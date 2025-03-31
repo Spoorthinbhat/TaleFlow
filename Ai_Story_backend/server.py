@@ -27,6 +27,7 @@ index = pc.Index(PINECONE_INDEX_NAME)
 
 # Configure Gemini AI
 genai.configure(api_key=os.getenv("GENAI_API_KEY"))
+Gemini_model = genai.GenerativeModel("models/gemini-2.0-flash")
 
 
 def retrieve_top_sentences(query):
@@ -67,8 +68,6 @@ def query_gemini_story(story, retrieved_snippet):
     The AI should generate only new content and not repeat existing text.
     """
 
-    Gemini_model = genai.GenerativeModel("models/gemini-2.0-flash")
-
     should_end = len(story) > 500
 
     full_prompt = (
@@ -99,8 +98,6 @@ def query_gemini_story(story, retrieved_snippet):
 def format_story_with_ai(story_text):
     """Formats a story properly using a generative AI, ensuring correct paragraph structure, spacing, and readability."""
 
-    Gemini_model = genai.GenerativeModel("models/gemini-1.5-flash-latest")
-
     prompt = (
         "You are an expert at formatting stories for readability. "
         "Take the following story and format it properly, ensuring:\n"
@@ -118,6 +115,21 @@ def format_story_with_ai(story_text):
     return response.text.strip()
 
 
+def get_title(story_text):
+    """Generates a story title using a generative AI."""
+
+    prompt = (
+        "You are an expert at giving titles to stories. "
+        "Take the followig story and give it a relevant title."
+        "Here is the story:\n\n"
+        f"{story_text}\n\n"
+        "Please return only the title without adding explanations or extra commentary."
+    )
+
+    response = Gemini_model.generate_content(prompt)
+    return response.text.strip()
+
+
 @app.route("/generate", methods=["POST"])
 def generate_story():
     """API Endpoint to handle story generation."""
@@ -129,8 +141,8 @@ def generate_story():
             return jsonify({"error": "Invalid request, 'input' field is required"}), 400
 
         # user_input = data["input"]
-        print(f"Received input: {new_input}")  # Debugging log
-        print(f"Story so far: {context}")
+        # print(f"Received input: {new_input}")  # Debugging log
+        # print(f"Story so far: {context}")
         # Dummy AI Response (Replace with actual AI logic)
         retrieved_snippet = retrieve_top_sentences(new_input)
         ai_response = query_gemini_story(context, retrieved_snippet)
@@ -152,8 +164,9 @@ def format_story():
         return jsonify({"error": "No story text provided"}), 400
 
     formatted_story = format_story_with_ai(story_text)
+    story_title = get_title(story_text)
 
-    return jsonify({"formatted_story": formatted_story})
+    return jsonify({"title": story_title, "formatted_story": formatted_story})
 
 
 @app.route("/", methods=["GET"])
