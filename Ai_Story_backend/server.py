@@ -6,9 +6,11 @@ import google.generativeai as genai
 from pinecone import Pinecone
 import os
 from dotenv import load_dotenv
+from waitress import serve
 
 # Load environment variables
 load_dotenv()
+PORT = os.getenv("PORT")
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -26,6 +28,7 @@ index = pc.Index(PINECONE_INDEX_NAME)
 # Configure Gemini AI
 genai.configure(api_key=os.getenv("GENAI_API_KEY"))
 
+
 def retrieve_top_sentences(query):
     """Finds the most relevant sentence and includes the next two sentences for context."""
     query_embedding = model.encode([query], convert_to_numpy=True).tolist()
@@ -33,13 +36,15 @@ def retrieve_top_sentences(query):
 
     if results["matches"]:
         retrieved_story = results["matches"][0]["metadata"]["text"]
-        sentences = retrieved_story.split('. ')  # Split story into sentences
+        sentences = retrieved_story.split(". ")  # Split story into sentences
 
         # Compute similarity between query and each sentence
         sentence_embeddings = model.encode(sentences, convert_to_numpy=True)
         query_embedding = np.array(query_embedding).reshape(1, -1)
 
-        similarities = np.dot(sentence_embeddings, query_embedding.T).flatten()  # Cosine similarity
+        similarities = np.dot(
+            sentence_embeddings, query_embedding.T
+        ).flatten()  # Cosine similarity
 
         # Find the most similar sentence
         most_similar_idx = np.argmax(similarities)
@@ -52,6 +57,7 @@ def retrieve_top_sentences(query):
         return top_sentences
     else:
         return ["No matching snippet found."]
+
 
 def query_gemini_story(story, retrieved_snippet):
     """Generates a continuation for a story using the given story and retrieved snippet as context.
@@ -89,6 +95,7 @@ def query_gemini_story(story, retrieved_snippet):
 
     return response.text.strip()
 
+
 def format_story_with_ai(story_text):
     """Formats a story properly using a generative AI, ensuring correct paragraph structure, spacing, and readability."""
 
@@ -110,7 +117,7 @@ def format_story_with_ai(story_text):
     response = Gemini_model.generate_content(prompt)
     return response.text.strip()
 
-@app.route("/generate", methods=["POST"])
+
 @app.route("/generate", methods=["POST"])
 def generate_story():
     """API Endpoint to handle story generation."""
@@ -120,7 +127,7 @@ def generate_story():
         context = data.get("context", "")
         if not new_input:
             return jsonify({"error": "Invalid request, 'input' field is required"}), 400
-        
+
         # user_input = data["input"]
         print(f"Received input: {new_input}")  # Debugging log
         print(f"Story so far: {context}")
@@ -128,27 +135,13 @@ def generate_story():
         retrieved_snippet = retrieve_top_sentences(new_input)
         ai_response = query_gemini_story(context, retrieved_snippet)
         # ai_story = f"{ai_response}"
-        
+
         return jsonify({"response": ai_response})
-    
+
     except Exception as e:
         print("Error:", str(e))
         return jsonify({"error": "Server error"}), 500
 
-# def generate_story():
-#     data = request.json
-#     story = data.get("story")
-
-#     if not story:
-#         return jsonify({"error": "No story provided"}), 400
-
-#     # Retrieve relevant snippet from Pinecone
-#     retrieved_snippet = retrieve_top_sentences(story)
-
-#     # Continue story generation
-#     story_continuation = query_gemini_story(story, retrieved_snippet)
-
-#     return jsonify({"story_continuation": story_continuation})
 
 @app.route("/format-story", methods=["POST"])
 def format_story():
@@ -162,5 +155,12 @@ def format_story():
 
     return jsonify({"formatted_story": formatted_story})
 
+
+@app.route("/", methods=["GET"])
+def default():
+    return "<h1>Hello world</h1>"
+
+
 if __name__ == "__main__":
-    app.run(debug=True)
+    print("Serving the server on port:", PORT)
+    serve(app, host="0.0.0.0", port=PORT)
