@@ -9,13 +9,16 @@ function FullStory({ storyText }) {
   useEffect(() => {
     const fetchStory = async () => {
       try {
-        const response = await fetch('http://127.0.0.1:5000/format-story', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ story_text: storyText }),
-        });
+        const response = await fetch(
+          'https://storyapi.poseidon0z.com/format-story',
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ story_text: storyText }),
+          }
+        );
 
         if (!response.ok) {
           throw new Error('Failed to fetch story');
