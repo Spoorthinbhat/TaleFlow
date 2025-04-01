@@ -63,7 +63,6 @@ def retrieve_top_sentences(query):
     """Finds the most relevant sentence and includes the next two sentences for context."""
     query_embedding = encode_text_onnx(query)
     results = index.query(vector=query_embedding, top_k=1, include_metadata=True)
-    print(results)
 
     if results["matches"]:
         retrieved_story = results["matches"][0]["metadata"]["text"]
@@ -113,12 +112,45 @@ def query_gemini_story(story, retrieved_snippet):
     return response.text.strip()
 
 
+def format_story_with_ai(story_text):
+    """Formats a story properly using a generative AI, ensuring correct paragraph structure, spacing, and readability."""
+
+    prompt = (
+        "You are an expert at formatting stories for readability. "
+        "Take the following story and format it properly, ensuring:\n"
+        "- Correct paragraph breaks.\n"
+        "- Proper indentation or spacing.\n"
+        "- Clear dialogue formatting with quotes on new lines.\n"
+        "- Consistent punctuation and capitalization.\n"
+        "- A polished and professional appearance.\n\n"
+        "Here is the story:\n\n"
+        f"{story_text}\n\n"
+        "Please return only the formatted story without adding explanations or extra commentary."
+    )
+
+    response = Gemini_model.generate_content(prompt)
+    return response.text.strip()
+
+
+def get_title(story_text):
+    """Generates a story title using a generative AI."""
+
+    prompt = (
+        "You are an expert at giving titles to stories. "
+        "Take the followig story and give it a relevant title."
+        "Here is the story:\n\n"
+        f"{story_text}\n\n"
+        "Please return only the title without adding explanations or extra commentary."
+    )
+
+    response = Gemini_model.generate_content(prompt)
+    return response.text.strip()
+
+
 @app.route("/generate", methods=["POST"])
 def generate_story():
     """API Endpoint to handle story generation."""
     try:
-        print("Hello")
-
         data = request.get_json()
         new_input = data.get("new_input", "")
         context = data.get("context", "")
@@ -128,19 +160,28 @@ def generate_story():
                 400,
             )
 
-        print("Hello")
         retrieved_snippet = retrieve_top_sentences(new_input)
-        print(retrieved_snippet)
         ai_response = query_gemini_story(context, retrieved_snippet)
 
         return jsonify({"response": ai_response})
 
     except Exception as e:
-        import traceback
-
-        traceback.print_exc()  # ✅ Force full error traceback
         print("Error:", str(e))
         return jsonify({"error": "Server error"}), 500
+
+
+@app.route("/format-story", methods=["POST"])
+def format_story():
+    data = request.json
+    story_text = data.get("story_text")
+
+    if not story_text:
+        return jsonify({"error": "No story text provided"}), 400
+
+    formatted_story = format_story_with_ai(story_text)
+    story_title = get_title(story_text)
+
+    return jsonify({"title": story_title, "formatted_story": formatted_story})
 
 
 @app.route("/", methods=["GET"])
