@@ -67,7 +67,7 @@ function Chat({ setDone, setStory }) {
   };
 
   return (
-    <div className="h-5/6 p-2">
+    <div className="h-5/6 p-2 text-sm md:text-md">
       <div className="flex flex-col p-4 border rounded-lg bg-white shadow-md h-full">
         <div
           className={`${
@@ -85,7 +85,7 @@ function Chat({ setDone, setStory }) {
                 <img
                   src={botProfile}
                   alt="AI"
-                  className="w-8 h-8 rounded-full mr-2"
+                  className="w-5 md:w-8 h-5 md:h-8 rounded-full mr-2"
                 />
               )}
               <div
@@ -101,7 +101,7 @@ function Chat({ setDone, setStory }) {
                 <img
                   src={userProfile}
                   alt="User"
-                  className="w-8 h-8 rounded-full ml-2"
+                  className="w-5 md:w-8 h-5 md:h-8 rounded-full ml-2"
                 />
               )}
             </div>
@@ -114,7 +114,7 @@ function Chat({ setDone, setStory }) {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
-              className="flex-1 p-2 border rounded-lg"
+              className="flex-1 p-2 border rounded-lg w-5/6"
               placeholder="Type a message..."
             />
             <button

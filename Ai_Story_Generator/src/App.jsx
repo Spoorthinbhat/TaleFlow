@@ -11,12 +11,12 @@ function App() {
 
   return (
     <>
-      <div className="flex gap-5 comic-neue-medium h-full text-[#555758]">
-        <div className="flex flex-col w-1/2 h-screen p-4">
+      <div className="flex flex-col md:flex-row gap-5 comic-neue-medium h-full text-[#555758]">
+        <div className="flex flex-col w-full md:w-1/2 h-screen p-4">
           <Heading />
           <Chat setDone={setDone} setStory={setStory} />
         </div>
-        <div className="w-1/2 h-screen p-6">
+        <div className="w-full md:w-1/2 h-screen p-6">
           {done ? <FullStory storyText={story} /> : <StoryInstructions />}
         </div>
       </div>
