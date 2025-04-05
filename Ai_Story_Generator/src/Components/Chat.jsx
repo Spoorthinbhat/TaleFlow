@@ -68,7 +68,7 @@ function Chat({ setDone, setStory }) {
 
   return (
     <div className="h-5/6 p-2 text-sm md:text-md">
-      <div className="flex flex-col p-4 border rounded-lg bg-white shadow-md h-full">
+      <div className="flex flex-col p-4 border rounded-lg bg-[#FFFFFFCC] shadow-md h-full">
         <div
           className={`${
             ended ? 'h-full' : 'h-11/12'
@@ -114,7 +114,7 @@ function Chat({ setDone, setStory }) {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
-              className="flex-1 p-2 border rounded-lg w-5/6"
+              className="flex-1 p-2 border rounded-lg w-5/6 bg-white"
               placeholder="Type a message..."
             />
             <button

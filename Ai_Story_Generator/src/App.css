@@ -1,1 +1,28 @@
 @import "tailwindcss";
+
+/* #root {
+    background-image: url("./assets/Background.svg");
+    background-size: 300px;
+    filter: blur(10px);
+} */
+
+#root {
+    position: relative;
+    z-index: 0;
+    overflow: hidden;
+    /* optional, to prevent scrollbars */
+}
+
+#root::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url("./assets/Background.svg");
+    background-size: 250px;
+    filter: blur(1.5px);
+    /* <-- adjust the blur here */
+    z-index: -1;
+}
