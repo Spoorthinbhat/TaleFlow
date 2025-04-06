@@ -8,7 +8,6 @@ from pinecone import Pinecone
 import os
 from dotenv import load_dotenv
 from waitress import serve
-from transformers import AutoTokenizer
 
 # Load environment variables
 load_dotenv()
@@ -34,15 +33,12 @@ onnx_session = ort.InferenceSession(
 # Configure Pinecone
 PINECONE_API_KEY = os.getenv("PINECONE_API_KEY")
 PINECONE_INDEX_NAME = os.getenv("PINECONE_INDEX_NAME")
-pc =Pinecone(api_key=PINECONE_API_KEY)
+pc = Pinecone(api_key=PINECONE_API_KEY)
 index = pc.Index(PINECONE_INDEX_NAME)
 
 # Configure Gemini AI
 genai.configure(api_key=os.getenv("GENAI_API_KEY"))
 Gemini_model = genai.GenerativeModel("models/gemini-2.0-flash")
-
-# Load Tokenizer
-tokenizer = AutoTokenizer.from_pretrained("sentence-transformers/all-MiniLM-L12-v2")
 
 
 def encode_text_onnx(text):
