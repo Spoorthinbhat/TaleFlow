@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import botProfile from '../assets/botProfile.svg';
 import userProfile from '../assets/userProfile.png';
 
@@ -29,7 +29,7 @@ function Chat({ setDone, setStory }) {
     }
 
     try {
-      const response = await fetch('https://storyapi.poseidon0z.com/generate', {
+      const response = await fetch('http://localhost:5000/generate', { ///change later 
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
