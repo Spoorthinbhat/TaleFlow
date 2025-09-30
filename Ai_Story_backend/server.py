@@ -8,7 +8,6 @@ from pinecone import Pinecone
 import os
 from dotenv import load_dotenv
 from waitress import serve
-from functools import lru_cache
 
 # Load environment variables
 load_dotenv()
@@ -20,16 +19,16 @@ CORS(app)
 
 # Load ONNX Model with Extensions
 ONNX_MODEL_PATH = "./all_MiniLM_L12_v2.onnx"  # Ensure this is the correct path
-# session_options = ort.SessionOptions()
-# session_options.register_custom_ops_library(
-#     get_library_path()
-# )  # Register ONNX Extensions
+session_options = ort.SessionOptions()
+session_options.register_custom_ops_library(
+    get_library_path()
+)  # Register ONNX Extensions
 
-# onnx_session = ort.InferenceSession(
-#     ONNX_MODEL_PATH,
-#     sess_options=session_options,
-#     providers=["CPUExecutionProvider"],
-# )
+onnx_session = ort.InferenceSession(
+    ONNX_MODEL_PATH,
+    sess_options=session_options,
+    providers=["CPUExecutionProvider"],
+)
 
 # Configure Pinecone
 PINECONE_API_KEY = os.getenv("PINECONE_API_KEY")
@@ -44,28 +43,17 @@ Gemini_model = genai.GenerativeModel("models/gemini-2.0-flash")
 
 def encode_text_onnx(text):
     """Encodes text into embeddings using the ONNX model."""
-    session = get_onnx_session()
-
+    # ONNX model expects raw text as input, not tokenized IDs
     onnx_input_dict = {
-        session.get_inputs()[0].name: np.array([text], dtype=object)
+        onnx_session.get_inputs()[0].name: np.array([text], dtype=object)
     }
 
-    ort_output = session.run(None, onnx_input_dict)
-    embedding = ort_output[0]
+    # Run inference on ONNX model
+    ort_output = onnx_session.run(None, onnx_input_dict)
+    embedding = ort_output[0]  # Extract the first output (embedding)
 
     return embedding.flatten().tolist()
 
-
-@lru_cache(maxsize=1)
-def get_onnx_session():
-    print("Loading ONNX model...")
-    session_options = ort.SessionOptions()
-    session_options.register_custom_ops_library(get_library_path())
-    return ort.InferenceSession(
-        ONNX_MODEL_PATH,
-        sess_options=session_options,
-        providers=["CPUExecutionProvider"],
-    )
 
 def retrieve_top_sentences(query):
     """Finds the most relevant sentence and includes the next two sentences for context."""
