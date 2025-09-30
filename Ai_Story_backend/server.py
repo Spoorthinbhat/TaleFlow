@@ -38,7 +38,7 @@ index = pc.Index(PINECONE_INDEX_NAME)
 
 # Configure Gemini AI
 genai.configure(api_key=os.getenv("GENAI_API_KEY"))
-Gemini_model = genai.GenerativeModel("models/gemini-2.0-flash")
+Gemini_model = genai.GenerativeModel("models/gemini-flash-latest")
 
 
 def encode_text_onnx(text):
