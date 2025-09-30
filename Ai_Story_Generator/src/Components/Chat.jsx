@@ -9,7 +9,10 @@ function Chat({ setDone, setStory }) {
 
   const handleSendMessage = async () => {
     if (!input.trim() || ended) return;
-
+    let userInput = input.trim();
+    if (!/[.!?]$/.test(userInput)) {
+      userInput += '.';
+    }
     const updatedConversation = [
       ...conversation,
       { sender: 'user', text: input },
